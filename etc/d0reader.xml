@@ -1,0 +1,54 @@
+<ZAEHLER>
+  <LOGPATH>/var/log/zaehler</LOGPATH>
+    <LOGPREFIX>zaehler</LOGPREFIX>
+  <READER>
+    <LESEKOPF>/dev/lesekopf0</LESEKOPF>
+    <PIDFILE>/var/run/d0reader.pid</PIDFILE>
+    <INTERVAL>60</INTERVAL>
+  </READER>
+  <VISUAL>
+    <INTERVAL>300</INTERVAL>
+    <LOGFILES>zaehler_esy-counter-t1_*.csv</LOGFILES>
+    <PIDFILE>/var/run/www-data/visuald0data.pid</PIDFILE>
+    <OUTPUTFOLDER type="image">/var/www/htdocs/zaehler/image</OUTPUTFOLDER>
+    <OUTPUTFOLDER type="text">/var/www/htdocs/zaehler/text</OUTPUTFOLDER>
+    <OUTPUTFOLDER type="html">/var/www/htdocs/zaehler/html</OUTPUTFOLDER>
+    <HTMLFOLDER type="image">../image</HTMLFOLDER>
+    <HTMLFOLDER type="text">../text</HTMLFOLDER>
+  </VISUAL>
+  <REPORT>
+    <FILE name="Zaehlerstand (kWh)">zaehler_esy-counter-t1_*.csv</FILE>
+    <FILE name="Device">zaehler_device_*.csv</FILE>
+    <FILE name="Zaehlernummer">zaehler_hag-id_*.csv</FILE>
+    <FILE name="Zaehlerstatus">zaehler_status_*csv</FILE>
+  </REPORT>
+  <OBIS id="1-0:1.7.255*255" alias="power" comment="Wirkleistung (Summe)"/>
+  <OBIS id="1-0:21.7.255*255" alias="power-l1" comment="Wirkleistung (Phase 1)"/>
+  <OBIS id="1-0:41.7.255*255" alias="power-l2" comment="Wirkleistung (Phase 2)"/>
+  <OBIS id="1-0:61.7.255*255" alias="power-l3" comment="Wirkleistung (Phase 3)"/>
+  <OBIS id="1-0:12.7.255*255" alias="voltage" comment="Spannung (Mittelwert)"/>
+  <OBIS id="1-0:32.7.255*255" alias="voltage-l1" comment="Spannung (Phase 1)"/>
+  <OBIS id="1-0:52.7.255*255" alias="voltage-l2" comment="Spannung (Phase 2)"/>
+  <OBIS id="1-0:72.7.255*255" alias="voltage-l3" comment="Spannung (Phase 3)"/>
+  <OBIS id="1-0:11.7.255*255" alias="current" comment="Stromstaerke (Summe)"/>
+  <OBIS id="1-0:31.7.255*255" alias="current-l1" comment="Stromstaerke (Phase 1)"/>
+  <OBIS id="1-0:51.7.255*255" alias="current-l2" comment="Stromstaerke (Phase 2)"/>
+  <OBIS id="1-0:71.7.255*255" alias="current-l3" comment="Stromstaerke (Phase 3)"/>
+  <OBIS id="1-0:14.7.0*255" alias="frequency" comment="Netzfrequenz"/>
+  <OBIS id="1-0:12.7.0*255" alias="powerfactor" comment="Leistungsfaktor"/>
+  <OBIS id="0-0:96.1.255*255" alias="device" comment="Zaehler Seriennr."/>
+  <OBIS id="1-0:96.5.5*255" alias="status" comment="Zaehler Status"/>
+  <OBIS id="1-0:1.8.255*255" alias="counter" comment="Zaehlerstand Wirkleistung"/>
+  <OBIS id="1-0:2.8.255*255" alias="counter-out" comment="Zaehlerstand Lieferg."/>
+  <OBIS id="1-0:1.8.1*255" alias="esy-counter-t1" comment="Active Power Counter Tariff 1"/>
+  <OBIS id="1-0:1.8.2*255" alias="esy-counter-t2" comment="Active Power Counter Tariff 2"/>
+  <OBIS id="1-0:0.0.0*255" alias="hag-id" comment="Eigentumsnr."/>
+  <OBIS id="1-0:96.50.0*0" alias="hag-status" comment="Netz Status"/>
+  <OBIS id="1-0:96.50.0*1" alias="hag-frequency" comment="Netz Periode"/>
+  <OBIS id="1-0:96.50.0*2" alias="hag-temp" comment="aktuelle Chiptemperatur"/>
+  <OBIS id="1-0:96.50.0*3" alias="hag-temp-min" comment="minimale Chiptemperatur"/>
+  <OBIS id="1-0:96.50.0*4" alias="hag-temp-avg" comment="gemittelte Chiptemperatur"/>
+  <OBIS id="1-0:96.50.0*5" alias="hag-temp-max" comment="maximale Chiptemperatur"/>
+  <OBIS id="1-0:96.50.0*6" alias="hag-check" comment="Kontrollnr."/>
+  <OBIS id="1-0:96.50.0*7" alias="hag-diag" comment="Diagnose"/>
+</ZAEHLER>
