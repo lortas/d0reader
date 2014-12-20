@@ -1,0 +1,1 @@
+SUBSYSTEMS=="usb", ATTRS{product}=="USB-IR-Kopf", ATTRS{serial}=="001DE0FD", NAME="lesekopf0", GROUP="dialout", MODE="0666"
