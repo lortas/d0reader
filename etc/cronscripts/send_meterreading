@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/local/bin/send_meterreading.rb
