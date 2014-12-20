@@ -1,0 +1,5 @@
+#!/bin/sh
+
+mkdir -p /var/run/www-data
+chown www-data /var/run/www-data
+su www-data -c /usr/local/bin/visuald0data.rb > /dev/null
