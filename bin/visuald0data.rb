@@ -141,7 +141,7 @@ Dir[logpath+"/"+logfiles].sort.each do |logfile|
   if File.exists? graphfile
     graphfile_l=File.stat(logfile).mtime.to_f
     graphfile_t=File.stat(graphfile).mtime.to_f
-    if graphfile_l < graphfile_t 
+    if graphfile_l < graphfile_t
       printf("Skipping '%s'\n",logfile)
       next
     end
@@ -160,7 +160,7 @@ Dir[logpath+"/"+logfiles].sort.each do |logfile|
   startcounter=lastvalues[1]
   tmpfile=File.new(outputfolder_text+"/"+filebasename+".txt","w")
   tmpfile << sprintf("# Start at %04d-%02d-%02dT%02d:%02d:%02d with %d kWh\n",starttime.year,starttime.month,starttime.day,starttime.hour,starttime.min,starttime.sec,lastvalues[1].to_i)
-  
+
   values=[0,0,0]
   nexttimepos=starttime.to_i + allvalues.size*intervall
   stats.each_line do |line|
