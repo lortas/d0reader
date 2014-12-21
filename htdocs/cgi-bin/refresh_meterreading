@@ -21,7 +21,7 @@ EOF
 /usr/local/bin/visuald0data.rb
 
 echo " --> Done. </p><hr/>"
-image=$(ls ../meterreading/image/*.png|tail -1)
+image=$(ls ../meterreading/image/meterreading*.png|tail -1)
 echo -n "<a href=\"$image\"><img src=\"$image\"/></a>"
 
 cat <<EOF
