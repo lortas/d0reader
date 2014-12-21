@@ -1,6 +1,6 @@
-<ZAEHLER>
-  <LOGPATH>/var/log/zaehler</LOGPATH>
-    <LOGPREFIX>zaehler</LOGPREFIX>
+<METER>
+  <LOGPATH>/var/log/meterreading</LOGPATH>
+  <LOGPREFIX>meterreading</LOGPREFIX>
   <READER>
     <LESEKOPF>/dev/lesekopf0</LESEKOPF>
     <PIDFILE>/var/run/d0reader.pid</PIDFILE>
@@ -8,19 +8,19 @@
   </READER>
   <VISUAL>
     <INTERVAL>300</INTERVAL>
-    <LOGFILES>zaehler_esy-counter-t1_*.csv</LOGFILES>
+    <LOGFILES>meterreading_esy-counter-t1_*.csv</LOGFILES>
     <PIDFILE>/var/run/www-data/visuald0data.pid</PIDFILE>
-    <OUTPUTFOLDER type="image">/var/www/htdocs/zaehler/image</OUTPUTFOLDER>
-    <OUTPUTFOLDER type="text">/var/www/htdocs/zaehler/text</OUTPUTFOLDER>
-    <OUTPUTFOLDER type="html">/var/www/htdocs/zaehler/html</OUTPUTFOLDER>
+    <OUTPUTFOLDER type="image">/var/www/htdocs/meterreading/image</OUTPUTFOLDER>
+    <OUTPUTFOLDER type="text">/var/www/htdocs/meterreading/text</OUTPUTFOLDER>
+    <OUTPUTFOLDER type="html">/var/www/htdocs/meterreading/html</OUTPUTFOLDER>
     <HTMLFOLDER type="image">../image</HTMLFOLDER>
     <HTMLFOLDER type="text">../text</HTMLFOLDER>
   </VISUAL>
   <REPORT>
-    <FILE name="Zaehlerstand (kWh)">zaehler_esy-counter-t1_*.csv</FILE>
-    <FILE name="Device">zaehler_device_*.csv</FILE>
-    <FILE name="Zaehlernummer">zaehler_hag-id_*.csv</FILE>
-    <FILE name="Zaehlerstatus">zaehler_status_*csv</FILE>
+    <FILE name="Zaehlerstand (kWh)">meterreading_esy-counter-t1_*.csv</FILE>
+    <FILE name="Device">meterreading_device_*.csv</FILE>
+    <FILE name="Zaehlernummer">meterreading_hag-id_*.csv</FILE>
+    <FILE name="Zaehlerstatus">meterreading_status_*csv</FILE>
   </REPORT>
   <OBIS id="1-0:1.7.255*255" alias="power" comment="Wirkleistung (Summe)"/>
   <OBIS id="1-0:21.7.255*255" alias="power-l1" comment="Wirkleistung (Phase 1)"/>
@@ -51,4 +51,4 @@
   <OBIS id="1-0:96.50.0*5" alias="hag-temp-max" comment="maximale Chiptemperatur"/>
   <OBIS id="1-0:96.50.0*6" alias="hag-check" comment="Kontrollnr."/>
   <OBIS id="1-0:96.50.0*7" alias="hag-diag" comment="Diagnose"/>
-</ZAEHLER>
+</METER>
