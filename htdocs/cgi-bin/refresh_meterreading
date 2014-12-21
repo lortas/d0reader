@@ -1,0 +1,30 @@
+#!/bin/sh
+
+cat <<EOF
+Content-Type: text/html; charset=UTF-8
+Connection: close
+Cache-Control: no-cache
+Expires: now
+
+<html>
+<head>
+<title>Aktuelle Verbrauchsdaten</title>
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="pragma" content="no-cache" />
+</head>
+<body bgcolor="white" text="black">
+<p style="color:grey;">Please wait. Output will be generated now.   ...  
+<!-- Output visuald0data.rb :
+EOF
+
+/usr/local/bin/visuald0data.rb
+
+echo " --> Done. </p><hr/>"
+image=$(ls ../zaehler/image/*.png|tail -1)
+echo -n "<a href=\"$image\"><img src=\"$image\"/></a>"
+
+cat <<EOF
+</body>
+</html>
+EOF
