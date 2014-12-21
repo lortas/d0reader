@@ -22,6 +22,12 @@
     <FILE name="Zaehlernummer">meterreading_hag-id_*.csv</FILE>
     <FILE name="Zaehlerstatus">meterreading_status_*csv</FILE>
   </REPORT>
+  <MAIL>
+    <FROM name="Sender" address="sender@example.org"/>
+    <TO name="Recipient" address="recipient@example.org"/>
+    <SUBJECT>Zwischenablesung Stromzaehler (Kundennummer XXXXXX, Vertragskonto YYYYYY)</SUBJECT>
+    <SERVER>127.0.0.1</SERVER>
+  </MAIL>
   <OBIS id="1-0:1.7.255*255" alias="power" comment="Wirkleistung (Summe)"/>
   <OBIS id="1-0:21.7.255*255" alias="power-l1" comment="Wirkleistung (Phase 1)"/>
   <OBIS id="1-0:41.7.255*255" alias="power-l2" comment="Wirkleistung (Phase 2)"/>
