@@ -197,7 +197,7 @@ Dir[logpath+"/"+logfiles].sort.each do |logfile|
   writeplotdata(tmpfile,verbrauch,intervall_h)
 
   # Bestimme Minumum und Maxiumum und deren Position
-  (minvalue[1],maxvalue[1])=verbrauch.minmax
+  (minvalue[1],maxvalue[1])=verbrauch[0..-2].minmax
   minvalue[0]=(verbrauch.find_index(minvalue[1])+0.5)*intervall_h
   maxvalue[0]=(verbrauch.find_index(maxvalue[1])+0.5)*intervall_h
 
