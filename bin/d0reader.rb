@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'socket'
 require 'rexml/document'
 
 configfile="/etc/d0reader.xml"
@@ -9,7 +10,9 @@ obis = {}
 lesekopf = ""
 pidfile = ""
 intervall = 0
+tcpserverport=2000
 @lastvalue = {}
+@write2pipe = false
 
 if File.exists? configfile
   config = REXML::Document.new File.new(configfile)
@@ -24,6 +27,7 @@ if File.exists? configfile
   config.elements.each("./READER/LESEKOPF") { |f| lesekopf = f.text }
   config.elements.each("./READER/PIDFILE") { |f| pidfile = f.text }
   config.elements.each("./READER/INTERVAL") { |f| intervall = f.text.to_i }
+  config.elements.each("./READER/LISTENPORT") { |f| tcpserverport = f.text.to_i }
 else
   printf("No configfile '%s' found.\n",configfile)
   exit
@@ -71,14 +75,24 @@ Signal.trap("HUP") {
   shut_down
 } 
 
+Signal.trap("USR1") {
+  @write2pipe = true
+} 
+Signal.trap("USR2") {
+  @write2pipe = false
+} 
+
 system "stty -F "+lesekopf+" 9600 evenp -cstopb"
 system "mkdir -p "+@logpath
 
-fork do
-  pid=File.open(pidfile,"w")
-  pid << Process.pid
-  pid.close
+reader,writer = IO.pipe
+
+pid1=fork do
+  reader.close
   File.open(lesekopf, "r").each_line do |line|
+    if @write2pipe
+      writer.write line
+    end
     id=line.slice!(/^[-*:.0-9]*\(/)
     if id and id.size > 3
       id.slice!(-1)
@@ -106,3 +120,31 @@ fork do
     end
   end
 end
+
+pid2=fork do
+  writer.close
+  Socket.tcp_server_loop(tcpserverport) {|sock, client_addrinfo|
+#   puts sprintf("Connection opened from %s:%d",client_addrinfo.ip_address,client_addrinfo.ip_port)
+    Process.kill("USR1", pid1)
+    begin
+      while message = reader.gets
+        if sock.closed?
+          break
+        end
+        sock.write message
+      end
+    rescue
+#     puts sprintf("Connection closed from %s:%d",client_addrinfo.ip_address,client_addrinfo.ip_port)
+      Process.kill("USR2", pid1)
+    ensure
+      sock.close
+    end
+  }
+end
+
+pidfile=File.open(pidfile,"w")
+pidfile << pid1
+pidfile << "\n"
+pidfile << pid2
+pidfile << "\n"
+pidfile.close
