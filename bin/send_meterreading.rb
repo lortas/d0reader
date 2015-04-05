@@ -46,14 +46,25 @@ class String
   end
 end
 
+time=Time.now
+monthname=["0","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+gmtoffset=time.gmt_offset
+gmtoffsetsign="+"
+if gmtoffset < 0
+  gmtoffset=-gmtoffset
+  gmtoffsetsign="-"
+end
+gmtoffsethour=gmtoffset/3600
+gmtoffsetmin=gmtoffset/60-gmtoffsethour*60
+
 message =  sprintf("From: %s\n",mail_addr_to_s(mail_from))
 message << sprintf("To: %s\n",mail_addr_to_s(mail_to))
 message << sprintf("Subject: %s\n",mail_subject)
+message << sprintf("Date: %02d %s %04d %02d:%02d:%02d %s%02d%02d\n",time.day,monthname[time.month],time.year,time.hour,time.min,time.sec,gmtoffsetsign,gmtoffsethour,gmtoffsetmin)
 message << "Content-Type: text/plain; charset=\"utf-8\"\n"
 message << "Content-Transfer-Encoding: 8bit\n"
 message << "\n"
 
-time=Time.now
 message << sprintf("%20s : %02d.%02d.%04d\n","Datum",time.day,time.month,time.year)
 files.each do |file|
   logfile = Dir[logpath+"/"+file[0]].sort.last
