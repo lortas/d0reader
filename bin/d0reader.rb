@@ -3,6 +3,41 @@
 require 'socket'
 require 'rexml/document'
 
+class TimeAverage
+  def initialize(damping=100)
+    @damping=damping
+    @timestamp=Time.now.to_f
+    @average=0
+    @lastvalue=nil
+    @lastaverage=@average
+  end
+
+  def add(value)
+    if @lastvalue == nil
+      @lastvalue = value
+    end
+    t = Time.now.to_f
+    v = 3600000 * (value-@lastvalue).to_f / (t-@timestamp).to_f
+    @average = (@average*@damping+v).to_f / (@damping+1).to_f
+    @timestamp=t
+    @lastvalue=value
+  end
+
+  def get
+    @lastaverage=@average.round
+    return @average
+  end
+
+  def to_s
+    @lastaverage=@average.round
+    return sprintf("%0.1f\t%1.0f",@timestamp,@average)
+  end
+
+  def modified?
+    return @lastaverage != @average.round
+  end
+end
+
 configfile="/etc/d0reader.xml"
 obis = {}
 @logpath = ""
@@ -11,6 +46,8 @@ lesekopf = ""
 pidfile = ""
 intervall = 0
 tcpserverport=2000
+damping=100
+averagesocketname="/tmp/d0average"
 @lastvalue = {}
 @write2pipe = false
 
@@ -28,6 +65,8 @@ if File.exists? configfile
   config.elements.each("./READER/PIDFILE") { |f| pidfile = f.text }
   config.elements.each("./READER/INTERVAL") { |f| intervall = f.text.to_i }
   config.elements.each("./READER/LISTENPORT") { |f| tcpserverport = f.text.to_i }
+  config.elements.each("./READER/DAMPING") { |f| damping = f.text.to_f }
+  config.elements.each("./READER/AVERAGESOCKET") { |f| averagesocketname = f.text }
 else
   printf("No configfile '%s' found.\n",configfile)
   exit
@@ -86,9 +125,19 @@ system "stty -F "+lesekopf+" 9600 evenp -cstopb"
 system "mkdir -p "+@logpath
 
 reader,writer = IO.pipe
+average=TimeAverage.new(damping)
 
 pid1=fork do
   reader.close
+  Thread.new do
+    serv = UNIXServer.new(averagesocketname)
+    File.chmod(0666,serv.path)
+    loop do
+      sock = serv.accept
+      sock.puts average
+      sock.close
+    end
+  end
   File.open(lesekopf, "r").each_line do |line|
     if @write2pipe
       writer.write line
@@ -115,6 +164,9 @@ pid1=fork do
           log << value
           log << "\n"
           log.close
+        end
+        if id == "esy-counter-t1"
+          average.add value.to_f
         end
       end
     end

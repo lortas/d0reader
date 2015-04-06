@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+require 'socket'
+require 'rexml/document'
+
+configfile="/etc/d0reader.xml"
+averagesocketname="/tmp/d0average"
+
+if File.exists? configfile
+  config = REXML::Document.new File.new(configfile)
+  if config == nil
+    print("Parsing Error during reading configfile '%s'",configfile)
+    exit
+  end
+  config=config.root
+  config.elements.each("./READER/AVERAGESOCKET") { |f| averagesocketname = f.text }
+else
+  printf("No configfile '%s' found.\n",configfile)
+  exit
+end
+
+print <<EOF
+Content-Type: text/html; charset=UTF-8
+Connection: close
+Cache-Control: no-cache
+Expires: now
+
+<html>
+<head>
+<title>Aktueller Verbrauch</title>
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="refresh" content="20" />
+</head>
+<body bgcolor="white" text="black">
+EOF
+
+incomming=0
+Socket.unix(averagesocketname) {|sock|
+  message = sock.gets.split("\t")
+  incomming=message[1]
+}
+
+printf( "<h1>vom Versorger: %d Watt</h1>\n", incomming )
+
+print <<EOF
+</body>
+</html>
+EOF
