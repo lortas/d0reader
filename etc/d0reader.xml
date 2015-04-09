@@ -5,7 +5,9 @@
     <LESEKOPF>/dev/lesekopf0</LESEKOPF>
     <PIDFILE>/var/run/d0reader.pid</PIDFILE>
     <INTERVAL>60</INTERVAL>
-    <LISTENPORT>2000</LISTENPORT>
+    <LISTENPORT d0mirror="10003" average="10004"/>
+    <AVERAGESOCKET>/var/run/d0reader.average</AVERAGESOCKET>
+    <SOLARVIEWTCPSERVER addr="127.0.0.1" port="15503"/>
   </READER>
   <VISUAL>
     <INTERVAL>300</INTERVAL>

@@ -4,7 +4,7 @@ require 'socket'
 require 'rexml/document'
 
 configfile="/etc/d0reader.xml"
-averagesocketname="/tmp/d0average"
+averageOutPort=2001
 
 if File.exists? configfile
   config = REXML::Document.new File.new(configfile)
@@ -13,7 +13,7 @@ if File.exists? configfile
     exit
   end
   config=config.root
-  config.elements.each("./READER/AVERAGESOCKET") { |f| averagesocketname = f.text }
+  config.elements.each("./READER/LISTENPORT") { |f| averageOutPort = f.attributes["average"].to_i }
 else
   printf("No configfile '%s' found.\n",configfile)
   exit
@@ -37,12 +37,20 @@ Expires: now
 EOF
 
 incomming=0
-Socket.unix(averagesocketname) {|sock|
+outgoing=0
+pac=0
+Socket.tcp("127.0.0.1",averageOutPort) {|sock|
   message = sock.gets.split("\t")
   incomming=message[1]
+  message = sock.gets.split("\t")
+  outgoing=message[1]
+  message = sock.gets.split("\t")
+  pac=message[1]
 }
 
-printf( "<h1>vom Versorger: %d Watt</h1>\n", incomming )
+printf( "<h1>vom Stromnetz: %d Watt</h1>\n", incomming )
+printf( "<h1>von der Sonne: %d Watt</h1>\n", pac )
+printf( "<h1>&Uuml;berschuss: %d Watt</h1>\n", outgoing )
 
 print <<EOF
 </body>

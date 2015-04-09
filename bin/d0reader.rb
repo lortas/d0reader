@@ -38,6 +38,10 @@ class TimeAverage
   end
 end
 
+def get_csvfilename(id,time)
+  return sprintf("%s/%s_%s_%04d%02d%02d.csv",@logpath,@logprefix,id,time.year,time.mon,time.mday)
+end
+
 configfile="/etc/d0reader.xml"
 obis = {}
 @logpath = ""
@@ -45,11 +49,13 @@ obis = {}
 lesekopf = ""
 pidfile = ""
 intervall = 0
-tcpserverport=2000
-damping=100
-averagesocketname="/tmp/d0average"
+damping=50
+d0mirrorPort=2000
+averageOutPort=2001
 @lastvalue = {}
 @write2pipe = false
+solarviewtcpserver=nil
+@lastsolardata=nil
 
 if File.exists? configfile
   config = REXML::Document.new File.new(configfile)
@@ -64,9 +70,12 @@ if File.exists? configfile
   config.elements.each("./READER/LESEKOPF") { |f| lesekopf = f.text }
   config.elements.each("./READER/PIDFILE") { |f| pidfile = f.text }
   config.elements.each("./READER/INTERVAL") { |f| intervall = f.text.to_i }
-  config.elements.each("./READER/LISTENPORT") { |f| tcpserverport = f.text.to_i }
+  config.elements.each("./READER/LISTENPORT") do |f|
+    d0mirrorPort = f.attributes["d0mirror"].to_i
+    averageOutPort = f.attributes["average"].to_i
+  end
   config.elements.each("./READER/DAMPING") { |f| damping = f.text.to_f }
-  config.elements.each("./READER/AVERAGESOCKET") { |f| averagesocketname = f.text }
+  config.elements.each("./READER/SOLARVIEWTCPSERVER") { |f| solarviewtcpserver = [f.attributes["addr"],f.attributes["port"].to_i] }
 else
   printf("No configfile '%s' found.\n",configfile)
   exit
@@ -88,7 +97,7 @@ end
 def shut_down
   time=Time.now
   @lastvalue.each do |id,value|
-    filename=sprintf("%s/%s_%s_%04d%02d%02d.csv",@logpath,@logprefix,id,time.year,time.mon,time.mday)
+    filename = get_csvfilename(id,time)
     log=File.open(filename,"a")
     log << sprintf("%.1f",time.to_f)
     log << "\t"
@@ -125,16 +134,19 @@ system "stty -F "+lesekopf+" 9600 evenp -cstopb"
 system "mkdir -p "+@logpath
 
 reader,writer = IO.pipe
-average=TimeAverage.new(damping)
+averageNetIn=TimeAverage.new(damping)
+averageNetOut=TimeAverage.new(damping)
+averageSolar=0
 
 pid1=fork do
   reader.close
   Thread.new do
-    serv = UNIXServer.new(averagesocketname)
-    File.chmod(0666,serv.path)
+    serv = TCPServer.new(averageOutPort)
     loop do
       sock = serv.accept
-      sock.puts average
+      sock.puts averageNetIn
+      sock.puts averageNetOut
+      sock.puts sprintf("%0.1f\t%1.0f",Time.now.to_f,averageSolar)
       sock.close
     end
   end
@@ -151,7 +163,7 @@ pid1=fork do
       value=line.slice!(/[^)]*/)
       if value
         time=Time.now
-        filename=sprintf("%s/%s_%s_%04d%02d%02d.csv",@logpath,@logprefix,id,time.year,time.mon,time.mday)
+        filename = get_csvfilename(id,time)
         if not File.exist?(filename)
           @lastvalue={}
         end
@@ -166,16 +178,41 @@ pid1=fork do
           log.close
         end
         if id == "esy-counter-t1"
-          average.add value.to_f
+          averageNetIn.add value.to_f
+          if solarviewtcpserver
+            Thread.new do
+              Socket.tcp("127.0.0.1", 15503) do |sock|
+                sock.print "00*\n"
+                sock.close_write
+                solardata = sock.gets.slice(/{.*}/)[1..-2].split(",")
+                # Erster Wert ist immer 0, daher nicht interessant und kann daher weg.
+                solardata.shift
+                t = solardata.shift(5).map{|v| v.to_i}
+                t=Time.new t[2],t[1],t[0],t[3],t[4]
+                solardata.map!{|v| v.to_f}
+                solardata.unshift (t.to_f/intervall.to_f).to_i
+                averageSolar = (averageSolar*damping+solardata[5]).to_f / (damping+1).to_f
+                filename = get_csvfilename("solar",t)
+                if not File.exist?(filename)
+                  @lastsolardata = nil
+                end
+                if @lastsolardata == nil or ( @lastsolardata[0] != solardata[0] and @lastsolardata[1] != solardata[1] )
+                  log=File.open(filename,"a")
+                  log.puts sprintf("%.1f\t%f",t.to_f,solardata[1])
+                  log.close
+                  @lastsolardata = solardata
+                end
+              end
+            end
+          end
         end
       end
     end
   end
 end
-
 pid2=fork do
   writer.close
-  Socket.tcp_server_loop(tcpserverport) {|sock, client_addrinfo|
+  Socket.tcp_server_loop(d0mirrorPort) {|sock, client_addrinfo|
 #   puts sprintf("Connection opened from %s:%d",client_addrinfo.ip_address,client_addrinfo.ip_port)
     Process.kill("USR1", pid1)
     begin
